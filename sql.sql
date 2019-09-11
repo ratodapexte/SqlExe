@@ -77,3 +77,117 @@ In addition, show the OrderID, ProductID, UnitPrice, and Quantity. Order by Orde
 
 SELECT "OrderID", "ProductID" , "UnitPrice" , "Quantity",
  "UnitPrice" * "Quantity" AS "TotalPrice" FROM "OrderDetails";
+
+/*14 - How many customers do we have in the Customers table? Show one value only, and don’t rely on getting
+the recordcount at the end of a resultset.*/
+
+SELECT count(*) FROM Customers;
+
+/*15 - Show the date of the first order ever made in the Orders table.*/
+
+SELECT min("OrderDate") AS "FirstOrder" FROM Orders;
+
+/*16 - Show a list of countries where the Northwind company has customers.*/
+
+SELECT DISTINCT "Country" FROM Customers ORDER BY "Country";
+
+/*17 - Show a list of all the different values in the Customers table for ContactTitles. Also include a count for
+each ContactTitle.*/
+
+SELECT DISTINCT "ContactTitle", count(*) FROM Customers GROUP BY "ContactTitle";
+
+/*18 - We’d like to show, for each product, the associated Supplier. Show the ProductID, ProductName, and the
+CompanyName of the Supplier. Sort by ProductID.*/
+
+SELECT "ProductID", "ProductName", "CompanyName" FROM Products p 
+ INNER JOIN Suppliers s ON p."SupplierID" = s."SupplierID" 
+ ORDER BY "ProductID";
+
+/*19 - We’d like to show a list of the Orders that were made, including the Shipper that was used. Show the
+OrderID, OrderDate (date only), and CompanyName of the Shipper, and sort by OrderID.*/
+
+SELECT "OrderID", "OrderDate", "CompanyName" FROM Orders o 
+INNER JOIN Shippers s ON o."ShipVia" = s."ShipperID" 
+WHERE "OrderID" < 10301;
+
+/*20 - For this problem, we’d like to see the total number of products in each category. Sort the results by the
+total number of products, in descending order.*/
+
+SELECT "CategoryName", count(*) AS "TotalProducts" FROM Products p
+INNER JOIN Categories c ON p."CategoryID" = c."CategoryID"  
+GROUP BY "CategoryName" ORDER BY "TotalProducts" DESC;
+
+/*21 - In the Customers table, show the total number of customers per Country and City.*/
+
+SELECT DISTINCT "Country", "City", count(*) AS "TotalCostumers" FROM Customers 
+GROUP BY "Country", "City" ORDER BY "TotalCostumers" DESC;
+
+/*22 - What products do we have in our inventory that should be reordered? For now, just use the fields
+UnitsInStock and ReorderLevel, where UnitsInStock is less than the ReorderLevel, ignoring the fields
+UnitsOnOrder and Discontinued.
+Order the results by ProductID.*/
+
+SELECT "ProductID", "ProductName", "UnitsInStock", "ReorderLevel" 
+ FROM Products WHERE "UnitsInStock" < "ReorderLevel" ORDER BY "ProductID";
+
+
+/*23 - Now we need to incorporate these fields—UnitsInStock, UnitsOnOrder, ReorderLevel, Discontinued—
+into our calculation. We’ll define “products that need reordering” with the following:
+* UnitsInStock plus UnitsOnOrder are less than or equal to ReorderLevel
+* The Discontinued flag is false (0).*/
+
+SELECT "ProductID", "ProductName", "UnitsInStock", "UnitsOnOrder",
+"ReorderLevel", "Discontinued" FROM Products 
+WHERE "UnitsInStock" + "UnitsOnOrder" < "ReorderLevel" 
+AND "Discontinued" = 0 ORDER BY "ProductID";
+
+/*24 - A salesperson for Northwind is going on a business trip to visit customers, and would like to see a list of
+all customers, sorted by region, alphabetically.
+However, he wants the customers with no region (null in the Region field) to be at the end, instead of at
+the top, where you’d normally find the null values. Within the same region, companies should be sorted
+by CustomerID.*/
+
+SELECT "CustomerID", "CompanyName", "Region" FROM Customers 
+ORDER BY "Region";
+
+/*25 - Some of the countries we ship to have very high freight charges. We'd like to investigate some more
+shipping options for our customers, to be able to offer them lower freight charges. Return the three ship
+countries with the highest average freight overall, in descending order by average freight.*/
+
+SELECT "ShipCountry", avg("Freight") AS "AvarageFreight" FROM Orders 
+ GROUP BY "ShipCountry" ORDER BY "AvarageFreight" DESC LIMIT 3;
+
+/*26 - We're continuing on the question above on high freight charges. Now, instead of using all the orders we
+have, we only want to see orders from the year 2015. */
+
+SELECT "ShipCountry", avg("Freight") AS "AvarageFreight" FROM Orders 
+ WHERE "OrderDate" IN ('2015-01-01', '2015-12-31')
+ GROUP BY "ShipCountry" ORDER BY "AvarageFreight" DESC LIMIT 3;
+
+/*29 - We're doing inventory, and need to show information like the below, for all orders. Sort by OrderID and
+Product ID.*/
+--apresentar o nome de todas as tabelas
+-- SELECT table_name FROM informaton_schema.tables
+
+SELECT e."EmployeeID", e."LastName", o."OrderID", p."ProductName", "Quantity"
+ FROM  (((Employees e
+     INNER JOIN Orders o ON e."EmployeeID" = o."EmployeeID")
+    INNER JOIN Order_details od ON o."OrderID" = od."OrderID")
+    INNER JOIN Products p ON od."ProductID" = p."ProductID") 
+ ORDER BY "OrderID", p."ProductID";
+
+/*30 - There are some customers who have never actually placed an order. Show these customers.*/
+
+SELECT c."CustomerID" AS "Customers_CustomersID", "OrderID" AS "Orders_CustomerID"
+ FROM Customers c LEFT JOIN Orders o 
+ ON c."CustomerID" = o."CustomerID" WHERE "OrderID" is null;
+
+/*31 - One employee (Margaret Peacock, EmployeeID 4) has placed the most orders. However, there are some
+customers who've never placed an order with her. Show only those customers who have never placed an
+order with her.*/
+
+
+
+SELECT DISTINCT c."CustomerID", o."CustomerID" FROM Customers c 
+ LEFT JOIN Orders o ON c."CustomerID" = o."CustomerID" AND o."EmployeeID" = 4
+ WHERE o."CustomerID" is null;
